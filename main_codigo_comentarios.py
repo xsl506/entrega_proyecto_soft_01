@@ -10,7 +10,7 @@
 def solicitar_numero_flotante(mensaje, positivo=True):
     while True:
         entrada = input(mensaje)
-        if entrada.count('.') <= 1 and entrada.replace('.', '').isnumeric():
+        if len(entrada) > 0 and entrada.count('.') <= 1 and entrada.replace('.', '').isnumeric():
             if not (positivo and entrada[0] == '-'):
                 return float(entrada)
             else:
@@ -21,7 +21,7 @@ def solicitar_numero_flotante(mensaje, positivo=True):
 def solicitar_numero_entero(mensaje):
     while True:
         entrada = input(mensaje)
-        if entrada.isnumeric():
+        if len(entrada) > 0 and entrada.isnumeric():
             return int(entrada)
         else:
             print('Valor inválido. Digite un número entero')
@@ -29,7 +29,7 @@ def solicitar_numero_entero(mensaje):
 def imprimir_evento(evento):
     print(f"Evento encontrado: {evento['titulo']}")  #Mostramos un mensaje indicando que se encontró el evento y mostramos los detalles del mismo
     print(f"Fecha: {evento['fecha']}")  #Mostramos la fecha del evento
-    print(f"Evento solo para mayores de edad: {'Sí' if evento['evento_para_mayores'] == 'true' else 'No'}")  #Mostramos si el evento es solo para mayores de edad o no
+    print(f"Evento solo para mayores de edad: {'Sí' if evento['evento_para_mayores'] == True else 'No'}")  #Mostramos si el evento es solo para mayores de edad o no
     print(f"Cantidad total de espacios: {evento['espacios_totales']}")  #Mostramos la cantidad total de espacios del evento
     print(f"Cantidad de espacios disponibles: {evento['espacios_disponibles']}")  #Mostramos la cantidad de espacios disponibles del evento
     print(f"Precio de boleto VIP: {evento['precio_vip']}")  #Mostramos el precio del boleto VIP del evento
@@ -171,7 +171,7 @@ def registrar_evento(): # basado en el Ejercicio 3, fase 2
         resultado = {
             "titulo": titulo,
             "fecha": fecha,
-            "evento_para_mayores": True if evento_mayores == 1 else False,
+            "evento_para_mayores": True if evento_mayores == "1" else False,
             "espacios_totales": espacios_totales,
             "espacios_disponibles": espacios_disponibles,
             "precio_vip": precio_vip,
@@ -191,14 +191,14 @@ def registrar_evento(): # basado en el Ejercicio 3, fase 2
             else:
                 break
 
-        if evento_adicional != 1:
+        if evento_adicional != "1":
             break  #Si el usuario desea registrar otro evento, se llama a la función nuevamente
 
 def eliminar_evento(): # Funcion para eliminar eventos, submenú Admin
     print("\n===== Borrar Evento =====")  #Mostramos el título para borrar de la lista de eventos
     titulo = input("Ingrese el título del evento a borrar: ")  #Solicitamos al usuario que ingrese el título del evento que desea borrar
     for evento in eventos_disponibles:  #Iniciamos un ciclo para recorrer la lista de eventos disponibles
-        if evento['titulo'].lower() == titulo.lower():  #Si el título del evento ingresado por el usuario coincide con algún evento en la lista de eventos disponibles
+        if evento['titulo'].strip().lower() == titulo.strip().lower():  #Si el título del evento ingresado por el usuario coincide con algún evento en la lista de eventos disponibles
             eventos_disponibles.remove(evento)  #Eliminamos el evento de la lista de eventos disponibles
             print(f"Evento '{titulo}' borrado exitosamente.")  #Mostramos un mensaje indicando que el evento fue borrado exitosamente
             return  #Salimos de la función
@@ -207,6 +207,11 @@ def eliminar_evento(): # Funcion para eliminar eventos, submenú Admin
 def modificar_evento(): # Funcion para editar los eventos de la Lista, submenú Admin
     print("\n===== Modificar Evento =====")  #Mostramos el título para modificar eventos
     titulo = input("Ingrese el título del evento a modificar: ")  #Solicitamos al usuario que ingrese el título del evento que desea modificar
+
+    titulos_eventos = []
+    for evento in eventos_disponibles:
+        titulos_eventos.append(evento['titulo'])
+        
     for evento in eventos_disponibles:  #Iniciamos un ciclo para recorrer la lista de eventos disponibles
         espacios_intocables = 0
         for entrada in entradas_compradas:
@@ -216,9 +221,18 @@ def modificar_evento(): # Funcion para editar los eventos de la Lista, submenú 
 
         if evento['titulo'].strip().lower() == titulo.strip().lower():  #Si el título del evento ingresado por el usuario coincide con algún evento en la lista de eventos disponibles
             imprimir_evento(evento)  #Mostramos un mensaje indicando que se encontró el evento y mostramos los detalles del mismo
-            nuevo_titulo = input("Ingrese el nuevo título del evento (Deje en blanco para no cambiar): ")  #Solicitamos al usuario que ingrese el nuevo título del evento, si desea cambiarlo
+            while True:
+                nuevo_titulo = input("Ingrese el nuevo título del evento (Deje en blanco para no cambiar): ")  #Solicitamos al usuario que ingrese el nuevo título del evento, si desea cambiarlo
+                if not (nuevo_titulo in titulos_eventos):
+                    break
+                else:
+                    print('Ya existe un evento con ese título.')
             if nuevo_titulo:  #Si el usuario ingresó un nuevo título
+                titulo_viejo = evento['titulo']
                 evento['titulo'] = nuevo_titulo  #Actualizamos el título del evento en la lista de eventos disponibles
+                for entrada in entradas_compradas:
+                    if entrada['titulo'] == titulo_viejo:
+                        entrada['titulo'] = nuevo_titulo
             nueva_fecha = input("Ingrese la nueva fecha del evento (Deje en blanco para no cambiar): ")  #Solicitamos al usuario que ingrese la nueva fecha del evento, si desea cambiarla
             if nueva_fecha:  #Si el usuario ingresó una nueva fecha
                 evento['fecha'] = nueva_fecha  #Actualizamos la fecha del evento en la lista de eventos disponibles            
@@ -235,8 +249,10 @@ def modificar_evento(): # Funcion para editar los eventos de la Lista, submenú 
 
             while True:
                 nuevos_espacios_disponibles = solicitar_numero_entero("Ingrese la nueva cantidad de espacios disponibles (digite 0 para no cambiar): ")  #Solicitamos al usuario que ingrese la nueva cantidad de espacios disponibles, si desea cambiarla
+                if nuevos_espacios_disponibles == 0:
+                    break
                 if nuevos_espacios_disponibles > 0:  #Si el usuario ingresó una nueva cantidad de espacios disponibles
-                    if evento['espacios_totales'] > espacios_intocables + nuevos_espacios_disponibles:
+                    if evento['espacios_totales'] >= espacios_intocables + nuevos_espacios_disponibles:
                         evento['espacios_disponibles'] = nuevos_espacios_disponibles  #Actualizamos la cantidad de espacios disponibles en la lista de eventos disponibles
                         break;
                     else:
@@ -281,9 +297,9 @@ def mostrar_resumen_todos_los_eventos(eventos_disponibles, entradas_compradas):
         # Contador de las entradas vendidas para este evento específico
         for entrada in entradas_compradas:
             if entrada['titulo'].strip().lower() == nombre.strip().lower():
-                cantidad_entradas = entrada['cantidad']
+                cantidad_entradas = entrada['cantidad_entradas']
                 total_vendidas += cantidad_entradas
-                tipo_entrada = entrada['tipo_entrada'].lower()
+                tipo_entrada = entrada['tipo_entrada'].strip().lower()
                 
                 if tipo_entrada == "general":
                     vendidas_general += cantidad_entradas
@@ -356,7 +372,7 @@ def comprar_entrada(): # Función creada para comprar entradas de un evento
                 edad = solicitar_numero_entero("Digite su edad: ")
                 if edad < 18:
                     print('No se permite el acceso a menores de edad.')
-                    break
+                    return
 
             
             while True:  #Validamos que el tipo de entrada ingresado pusuario sea válido
