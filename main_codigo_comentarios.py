@@ -98,7 +98,6 @@ def validar_correo(correo_electronico): # Función Basada en ejercicio Fase 1 - 
                             
                 if extension_dominio in dominios_validos: # RESULTADO si el dominio del CORREO ES VÁLIDO
                     es_valido = True
-                    errores.append( ""             )
                 else: # RESULTADOS detallados si el CORREO NO ES VÁLIDO
                     es_valido = False
                     errores.append( f"Error: El dominio '.{extension_dominio}' no es válido")
@@ -149,7 +148,7 @@ def registrar_evento(): # basado en el Ejercicio 3, fase 2
 
         while True:  #Iniciamos un ciclo condicional para validar que la cantidad de espacios disponibles ingresada por el usuario sea mayor o igual a 0 y menor o igual a la cantidad total de espacios disponibles
             espacios_disponibles = solicitar_numero_entero("Digite la cantidad de espacios disponibles: ")
-            if espacios_disponibles < 0 or espacios_disponibles > espacios_totales:
+            if espacios_disponibles > espacios_totales:
                 print("Cantidad de espacios disponibles inválida.")
             else:
                 break
@@ -546,7 +545,7 @@ def mostrar_menu_administrador():
 
 
 
-
+registrar_evento()
 mostrar_menu_inicial()
 mostrar_resumen_todos_los_eventos(eventos_disponibles, entradas_compradas)  # Mostramos el resumen general de todos los eventos antes de salir
 
